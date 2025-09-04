@@ -7,9 +7,9 @@ pygame.init()
 # 游戏常量
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-GRID_SIZE = 30
-GRID_WIDTH_NUM = 10
-GRID_HEIGHT_NUM = 20
+GRID_SIZE = 20
+GRID_WIDTH_NUM = 17
+GRID_HEIGHT_NUM = 30
 
 # 颜色定义
 BLACK = (0, 0, 0)
@@ -77,12 +77,37 @@ def draw_grid(surface, grid):
                              GAME_AREA_Y + y * GRID_SIZE, 
                              GRID_SIZE, GRID_SIZE), 
                             1)
+#方块类
+class Piece:
+    def __init__(self, x, y, shape):
+        self.x = x
+        self.y = y
+        self.shape = shape
+        self.color = COLORS[SHAPES.index(shape)]
+        self.rotation = 0
 
-
+def generate_piece():
+    return Piece(GRID_WIDTH_NUM//2, 0, random.choice(SHAPES))
+#绘制方块
+def draw_piece(surface, piece):
+    for y, row in enumerate(piece.shape):
+        for x, cell in enumerate(row):
+            if cell:
+                pygame.draw.rect(surface, piece.color, 
+                                (GAME_AREA_X + piece.x * GRID_SIZE + x * GRID_SIZE, 
+                                 GAME_AREA_Y + piece.y * GRID_SIZE + y * GRID_SIZE, 
+                                 GRID_SIZE, GRID_SIZE), 
+                                0)
+                pygame.draw.rect(surface, (50, 50, 50), 
+                            (GAME_AREA_X + piece.x * GRID_SIZE + x * GRID_SIZE, 
+                             GAME_AREA_Y + piece.y * GRID_SIZE + y * GRID_SIZE, 
+                             GRID_SIZE, GRID_SIZE), 
+                            1)
 # 游戏循环标志
 running = True
-
-# 主游戏循环
+current_piece=generate_piece()
+count=0
+# 游戏主循环
 while running:
     # 处理事件
     for event in pygame.event.get():
@@ -108,7 +133,22 @@ while running:
     grid = create_grid(locked_positions)
     draw_grid(screen, grid)
     
-    # 更新屏幕
+    # 绘制当前方块  
+    draw_piece(screen, current_piece)
+
+    # 游戏逻辑更新
+    # 每10帧下降一格
+    if(count >= 10):
+        current_piece.y += 1
+        count=0
+    else:
+        count+=1
+    #检查是否碰撞
+    if current_piece.y + 1 >= GRID_HEIGHT_NUM:
+        locked_positions += current_piece
+        current_piece = generate_piece()
+  
+    # 更新屏幕      
     pygame.display.flip()
     
     # 控制游戏帧率

@@ -213,7 +213,7 @@ def main():
     while True:
         game.handle_keys()
         if not game.game_over:
-            game.update()
+            game.update()           
         game.draw()
         clock.tick(60)
 
