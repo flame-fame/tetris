@@ -83,7 +83,7 @@ class Piece:
         self.x = x
         self.y = y
         self.shape = shape
-        self.color = COLORS[SHAPES.index(shape)]
+        self.color = COLORS[random.randint(0,len(COLORS)-1)]
         self.rotation = 0
 
 def generate_piece():
@@ -107,8 +107,13 @@ def draw_piece(surface, piece):
 running = True
 current_piece=generate_piece()
 count=0
+#locked_positions是一个字典，用于存储已锁定的方块位置
+#每个键是一个元组(x, y)，表示方块的位置
+#每个值是一个颜色元组(r, g, b)，表示方块的颜色
+global locked_positions 
+locked_positions = {}  # 初始为空
 # 游戏主循环
-while running:
+while running:  
     # 处理事件
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -126,10 +131,7 @@ while running:
                      GRID_WIDTH_NUM * GRID_SIZE + 4, GRID_HEIGHT_NUM * GRID_SIZE + 4), 
                     2)
     # 网格绘制   
-    #locked_positions是一个字典，用于存储已锁定的方块位置
-    #每个键是一个元组(x, y)，表示方块的位置
-    #每个值是一个颜色元组(r, g, b)，表示方块的颜色
-    locked_positions = {}  # 初始为空
+    
     grid = create_grid(locked_positions)
     draw_grid(screen, grid)
     
@@ -144,8 +146,17 @@ while running:
     else:
         count+=1
     #检查是否碰撞
-    if current_piece.y + 1 >= GRID_HEIGHT_NUM:
-        locked_positions += current_piece
+    for y, row in enumerate(current_piece.shape):
+        for x, cell in enumerate(row):
+            if cell:
+                if (current_piece.x + x, current_piece.y + y) in locked_positions:
+                    current_piece.y -= 1
+                    break
+    if current_piece.y + 2 >= GRID_HEIGHT_NUM:
+        for y, row in enumerate(current_piece.shape):
+            for x, cell in enumerate(row):
+                if cell:
+                    locked_positions[(current_piece.x + x, current_piece.y + y)] = current_piece.color
         current_piece = generate_piece()
   
     # 更新屏幕      
